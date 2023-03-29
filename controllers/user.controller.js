@@ -15,20 +15,23 @@ const login = async (req, res) => {
   const user = await User.findOne({ email: email });
   if (user) {
     if (bcrypt.compareSync(password, user.password)) {
-      token = generateToken(user, "access");
-      
-      res.cookie("jwt", token, {
-        httpOnly: true,
-        maxAge: 3600000,
-        sameSite: "none",
-      });
-      res.send({
+      const jwtToken = generateToken(user, "access");
+      const payload = JSON.stringify({
         _id: user._id,
         name: user.name,
         email: user.email,
         isAdmin: user.isAdmin,
-        token: token,
+        token: jwtToken,
       });
+      res
+        .status(200)
+        .cookie("token", jwtToken, { httpOnly: true, maxAge: 3600000 })
+        .send({
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          isAdmin: user.isAdmin,
+        });
       return;
     }
   }
