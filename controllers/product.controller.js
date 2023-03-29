@@ -148,6 +148,8 @@ const getById = async (req, res) => {
 
 const postReview = async (req, res) => {
   const productId = req.params.id;
+  const { rating, comment } = req.body;
+  const user = req.user;
   const product = await Product.findById(productId);
   if (product) {
     if (product.reviews.find((x) => x.name === req.user.name)) {
@@ -157,9 +159,10 @@ const postReview = async (req, res) => {
     }
 
     const review = {
-      name: req.user.name,
-      rating: Number(req.body.rating),
-      comment: req.body.comment,
+      user: mongoose.Types.ObjectId(user._id),
+      name: user.name,
+      rating: Number(rating),
+      comment: comment,
     };
     product.reviews.push(review);
     product.numReviews = product.reviews.length;
@@ -178,4 +181,4 @@ const postReview = async (req, res) => {
   }
 };
 
-module.exports = { getAllProducts, getBySlug };
+module.exports = { getAllProducts, getBySlug, postReview };

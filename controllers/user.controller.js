@@ -1,11 +1,12 @@
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const dotenv = require("dotenv");
 const generateToken = require("../utils/generateToken.js");
 const sendMail = require("../utils/sendMail.js");
 const User = require("../models/User.js");
-const jwt = require("jsonwebtoken");
-const dotenv = require("dotenv");
 
 dotenv.config();
+
 // @desc authenticate user and get token
 // @route POST /api/users/login
 // @access PUBLIC
@@ -14,12 +15,19 @@ const login = async (req, res) => {
   const user = await User.findOne({ email: email });
   if (user) {
     if (bcrypt.compareSync(password, user.password)) {
+      token = generateToken(user, "access");
+      
+      res.cookie("jwt", token, {
+        httpOnly: true,
+        maxAge: 3600000,
+        sameSite: "none",
+      });
       res.send({
         _id: user._id,
         name: user.name,
         email: user.email,
         isAdmin: user.isAdmin,
-        token: generateToken(user, "access"),
+        token: token,
       });
       return;
     }
@@ -39,7 +47,7 @@ const register = async (req, res) => {
 
   const userExists = await User.findOne({ email: email });
   if (userExists) {
-    res.status(400).send({message: "User already exists"});
+    res.status(400).send({ message: "User already exists" });
   }
 
   const user = await User.create({
@@ -94,25 +102,20 @@ const mailForPasswordReset = async (req, res) => {
 const resetUserPassword = async (req, res) => {
   try {
     const { token, password } = req.body;
-    const decodedToken = jwt.verify(
-      token,
-      process.env.JWT_SECRET
-    );
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(decodedToken._id);
 
     if (user && password) {
-      user.password = bcrypt.hashSync(req.body.password, 8);
+      user.password = req.body.password;
       await user.save();
       res.send({
         message: "Password reseted successfully",
       });
     } else {
-      res.status(401);
-      throw new Error("Unable to update password");
+      res.status(401).send("Unable to update password");
     }
   } catch (error) {
-    res.status(400);
-    throw new Error("User not found.");
+    res.status(400).send("User not found.");
   }
 };
 
