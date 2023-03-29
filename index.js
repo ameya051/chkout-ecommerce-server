@@ -3,6 +3,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const userRouter = require("./routes/user.route.js");
+const productRoute = require("./routes/product.route.js");
 
 dotenv.config();
 connectDB();
@@ -14,6 +15,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/users", userRouter);
+app.use("/api/products", productRoute);
 
 app.get("/", (req, res) => {
   res.send("Welcome to ChkOut API");

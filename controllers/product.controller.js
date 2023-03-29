@@ -1,7 +1,7 @@
 const multer = require("multer");
 const { v2 } = require("cloudinary");
 const streamifier = require("streamifier");
-const Product = require("../models/productModel.js");
+const Product = require("../models/Product.js");
 
 upload = multer();
 const PAGE_SIZE = 3;
@@ -177,3 +177,5 @@ const postReview = async (req, res) => {
     res.status(404).send({ message: "Product Not Found" });
   }
 };
+
+module.exports = { getAllProducts, getBySlug };
