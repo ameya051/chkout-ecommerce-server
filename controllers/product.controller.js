@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const multer = require("multer");
 const { v2 } = require("cloudinary");
 const streamifier = require("streamifier");
@@ -146,10 +147,21 @@ const getById = async (req, res) => {
   }
 };
 
+const getReview = async (req, res) => {
+  const productId = req.params.id;
+  const product = await Product.findById(productId);
+  if (product) {
+    res.send(product.reviews);
+  } else {
+    res.status(404).send({ message: "Product not found" });
+  }
+};
+
 const postReview = async (req, res) => {
   const productId = req.params.id;
   const { rating, comment } = req.body;
   const user = req.user;
+  console.log(user);
   const product = await Product.findById(productId);
   if (product) {
     if (product.reviews.find((x) => x.name === req.user.name)) {
@@ -159,7 +171,7 @@ const postReview = async (req, res) => {
     }
 
     const review = {
-      user: mongoose.Types.ObjectId(user._id),
+      user: user._id,
       name: user.name,
       rating: Number(rating),
       comment: comment,
@@ -181,4 +193,4 @@ const postReview = async (req, res) => {
   }
 };
 
-module.exports = { getAllProducts, getBySlug, postReview };
+module.exports = { getAllProducts, getBySlug, getReview, postReview };

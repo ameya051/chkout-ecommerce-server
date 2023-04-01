@@ -16,13 +16,6 @@ const login = async (req, res) => {
   if (user) {
     if (bcrypt.compareSync(password, user.password)) {
       const jwtToken = generateToken(user, "access");
-      const payload = JSON.stringify({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        isAdmin: user.isAdmin,
-        token: jwtToken,
-      });
       res
         .status(200)
         .cookie("token", jwtToken, { httpOnly: true, maxAge: 3600000 })
