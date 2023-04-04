@@ -1,4 +1,3 @@
-const mongoose = require('mongoose');
 const multer = require("multer");
 const { v2 } = require("cloudinary");
 const streamifier = require("streamifier");
@@ -9,7 +8,12 @@ const PAGE_SIZE = 3;
 
 const getAllProducts = async (req, res) => {
   const products = await Product.find();
-  res.send(products);
+  res.status(200).send(products);
+};
+
+const getFeaturedProducts = async (req, res) => {
+  const products = await Product.find({ isFeatured: true });
+  res.status(200).send(products);
 };
 
 const searchProduct = async (req, res) => {
@@ -193,4 +197,10 @@ const postReview = async (req, res) => {
   }
 };
 
-module.exports = { getAllProducts, getBySlug, getReview, postReview };
+module.exports = {
+  getAllProducts,
+  getFeaturedProducts,
+  getBySlug,
+  getReview,
+  postReview,
+};

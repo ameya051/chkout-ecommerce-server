@@ -31,8 +31,7 @@ const login = async (req, res) => {
 const register = async (req, res) => {
   const { name, email, password } = req.body;
   if (!name || !email || !password) {
-    res.status(400);
-    throw new Error("Please enter all the fields");
+    res.status(400).send({error: "Please enter all the fields"});
   }
 
   const userExists = await User.findOne({ email: email });
@@ -54,7 +53,7 @@ const register = async (req, res) => {
       token: generateToken(user, "access"),
     });
   } else {
-    res.status(400);
+    res.status(500);
     throw new Error("Failed to create the user");
   }
 };

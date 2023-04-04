@@ -1,6 +1,7 @@
 const express = require("express");
 const {
   getAllProducts,
+  getFeaturedProducts,
   getBySlug,
   getReview,
   postReview,
@@ -10,6 +11,7 @@ const { verifyToken } = require("../middlewares/authMiddleware.js");
 router = express.Router();
 
 router.get("/", getAllProducts);
+router.get("/featured", getFeaturedProducts);
 router.get("/:slug", getBySlug);
 router.get("/reviews/:id", getReview);
 router.post("/reviews/:id", verifyToken, postReview);
