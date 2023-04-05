@@ -6,7 +6,6 @@ const userRouter = require("./routes/user.route.js");
 const productRoute = require("./routes/product.route.js");
 const orderRoute = require("./routes/order.route.js");
 const { notFound, errorHandler } = require("./middlewares/errorMiddleware.js");
-const Razorpay = require("razorpay");
 
 dotenv.config();
 connectDB();
