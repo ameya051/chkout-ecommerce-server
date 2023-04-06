@@ -8,7 +8,7 @@ const {
 } = require("../controllers/product.controller.js");
 const { verifyToken } = require("../middlewares/authMiddleware.js");
 
-router = express.Router();
+const router = express.Router();
 
 router.get("/", getAllProducts);
 router.get("/featured", getFeaturedProducts);

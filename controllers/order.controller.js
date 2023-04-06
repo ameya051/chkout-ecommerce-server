@@ -1,6 +1,8 @@
 const Stripe = require("stripe");
 const dotenv = require("dotenv");
 const Order = require("../models/Order.js");
+const User = require("../models/User.js");
+const Product = require("../models/Product.js");
 const { default: mongoose } = require("mongoose");
 
 dotenv.config();
@@ -35,11 +37,10 @@ const createOrder = async (req, res) => {
 
     if (orderItems && !orderItems.length) {
       res.status(401).send({ message: "No order items" });
-      throw new Error("No order items");
     } else {
       const order = new Order({
         user: user._id,
-        orderItems,
+        orderItems: orderItems.map((x) => ({ ...x, product: x._id })),
         shippingAddress,
         paymentMethod,
         itemsPrice,
@@ -48,7 +49,7 @@ const createOrder = async (req, res) => {
         totalPrice,
       });
       const createdOrder = await order.save();
-      res.status(201).json(createdOrder);
+      res.status(201).send(createdOrder);
     }
   } catch (error) {
     console.error(error);
@@ -57,7 +58,7 @@ const createOrder = async (req, res) => {
 
 const fetchOrderByID = async (req, res) => {
   try {
-    const ID=new mongoose.Types.ObjectId(req.params.id)
+    const ID = new mongoose.Types.ObjectId(req.params.id);
     const order = await Order.findById(ID);
     if (order) {
       res.status(200).send(order);
@@ -112,10 +113,87 @@ const createStripeIntent = async (req, res) => {
   }
 };
 
+const fetchAdminSummary = async (req, res) => {
+  try {
+    const orders = await Order.aggregate([
+      {
+        $group: {
+          _id: null,
+          numOrders: { $sum: 1 },
+          sales: { $sum: "$totalPrice" },
+        },
+      },
+    ]);
+    const users = await User.aggregate([
+      {
+        $group: {
+          _id: null,
+          numUsers: { $sum: 1 },
+        },
+      },
+    ]);
+    const products = await Product.aggregate([
+      {
+        $group: {
+          _id: null,
+          numProducts: { $sum: 1 },
+        },
+      },
+    ]);
+    const salesData = await Order.aggregate([
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+          orders: { $sum: 1 },
+          totalSales: { $sum: "$totalPrice" },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+    const productCategories = await Product.aggregate([
+      {
+        $group: {
+          _id: "$category",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+    res.send({ users, orders, products, salesData, productCategories });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const fetchAdminOrders = async (req, res) => {
+  try {
+    const orders = await Order.find().populate("user", "name");
+    res.status(200).send(orders);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const deleteAdminOrders = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (order) {
+      await order.remove();
+      res.status(200).send({ message: "Order Deleted" });
+    } else {
+      res.status(404).send({ message: "Order Not Found" });
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 module.exports = {
   fetchOrderHistory,
   createOrder,
   fetchOrderByID,
   updateOrderOnPay,
   createStripeIntent,
+  fetchAdminSummary,
+  fetchAdminOrders,
+  deleteAdminOrders
 };
