@@ -1,9 +1,5 @@
-const multer = require("multer");
-const { v2 } = require("cloudinary");
-const streamifier = require("streamifier");
 const Product = require("../models/Product.js");
 
-upload = multer();
 const PAGE_SIZE = 3;
 
 const getAllProducts = async (req, res) => {
@@ -70,30 +66,31 @@ const searchProduct = async (req, res) => {
       ? { createdAt: -1 }
       : { _id: -1 };
 
-  const categories = await Product.find().distinct("category");
-  const brands = await Product.find().distinct("brand");
-  const products = await Product.find(
-    {
+  const [categories, brands, products, countProducts] = await Promise.all([
+    Product.find().distinct("category"),
+    Product.find().distinct("brand"),
+    Product.find(
+      {
+        ...queryFilter,
+        ...categoryFilter,
+        ...priceFilter,
+        ...brandFilter,
+        ...ratingFilter,
+      },
+      "-reviews"
+    )
+      .sort(order)
+      .skip(pageSize * (page - 1))
+      .limit(pageSize)
+      .lean(),
+    Product.countDocuments({
       ...queryFilter,
       ...categoryFilter,
       ...priceFilter,
       ...brandFilter,
       ...ratingFilter,
-    },
-    "-reviews"
-  )
-    .sort(order)
-    .skip(pageSize * (page - 1))
-    .limit(pageSize)
-    .lean();
-
-  const countProducts = await Product.countDocuments({
-    ...queryFilter,
-    ...categoryFilter,
-    ...priceFilter,
-    ...brandFilter,
-    ...ratingFilter,
-  });
+    }),
+  ]);
 
   res.send({
     products,
@@ -103,29 +100,6 @@ const searchProduct = async (req, res) => {
     categories,
     brands,
   });
-};
-
-const createProduct = async (req, res) => {
-  v2.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-  });
-
-  const streamUpload = (req) => {
-    return new Promise((resolve, reject) => {
-      const stream = v2.uploader.upload_stream((error, result) => {
-        if (result) {
-          resolve(result);
-        } else {
-          reject(error);
-        }
-      });
-      streamifier.createReadStream(req.file.buffer).pipe(stream);
-    });
-  };
-  const result = await streamUpload(req);
-  res.send(result);
 };
 
 const getCategory = async (req, res) => {
@@ -203,4 +177,6 @@ module.exports = {
   getBySlug,
   getReview,
   postReview,
+  searchProduct,
+  getCategory,
 };
