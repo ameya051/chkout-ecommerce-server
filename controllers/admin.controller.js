@@ -1,7 +1,10 @@
 const Order = require("../models/Order.js");
 const User = require("../models/User.js");
 const Product = require("../models/Product.js");
-const { v2 } = require("cloudinary");
+const cloudinary = require("cloudinary").v2;
+const dotenv = require("dotenv");
+const getDataUri = require("../utils/dataUri.js");
+dotenv.config();
 
 const fetchSummary = async (req, res) => {
   try {
@@ -63,6 +66,45 @@ const fetchOrders = async (req, res) => {
   }
 };
 
+const updateOrderToDelivered = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      res.status(404).send({ message: "Order not found" });
+    } else if (order?.isPaid) {
+      order.isDelivered = true;
+      order.deliveredAt = new Date();
+
+      const updatedOrder = await order.save();
+      res.status(201).json(updatedOrder);
+    } else {
+      res
+        .status(500)
+        .send({ message: "Order wasn't able to be set delivered." });
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const updateOrdertoPaid = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      res.status(404).send({ message: "Order not found" });
+    } else if (order?.paymentMethod === "Cash On Delivery") {
+      order.isPaid = true;
+      order.paidAt = new Date();
+      const updatedOrder = await order.save();
+      res.status(201).json(updatedOrder);
+    } else {
+      res.status(500).send({ message: "Order wasn't able to be set paid." });
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 const deleteOrder = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
@@ -78,25 +120,74 @@ const deleteOrder = async (req, res) => {
 };
 
 const createProduct = async (req, res) => {
-  v2.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-  });
-  const streamUpload = (req) => {
-    return new Promise((resolve, reject) => {
-      const stream = v2.uploader.upload_stream((error, result) => {
-        if (result) {
-          resolve(result);
-        } else {
-          reject(error);
-        }
-      });
-      streamifier.createReadStream(req.file.buffer).pipe(stream);
+  try {
+    const {
+      name,
+      slug,
+      price,
+      image,
+      category,
+      brand,
+      countInStock,
+      description,
+      isFeatured,
+      featuredImage,
+    } = req.body;
+    const file = req.file;
+
+    if (
+      !name ||
+      !slug ||
+      !category ||
+      !price ||
+      // !image ||
+      !brand ||
+      !countInStock ||
+      !description ||
+      !isFeatured ||
+      !featuredImage
+    ) {
+      return res.status(400).send({ message: "Please add all fields" });
+    }
+
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLIENT_NAME,
+      api_key: process.env.CLOUDINARY_CLIENT_API,
+      api_secret: process.env.CLOUDINARY_CLIENT_SECRET,
     });
-  };
-  const result = await streamUpload(req);
-  res.send(result);
+    const fileUri = getDataUri(file);
+    const myCloud = await cloudinary.uploader.upload(fileUri.content);
+
+    await Product.create({
+      name,
+      slug,
+      category,
+      image: myCloud.secure_url,
+      price,
+      brand,
+      countInStock,
+      description,
+      isFeatured,
+      featuredImage,
+    });
+
+    // const streamUpload = (req) => {
+    //   return new Promise((resolve, reject) => {
+    //     const stream = v2.uploader.upload_stream((error, result) => {
+    //       if (result) {
+    //         resolve(result);
+    //       } else {
+    //         reject(error);
+    //       }
+    //     });
+    //     streamifier.createReadStream(req.file.buffer).pipe(stream);
+    //   });
+    // };
+    // const result = await streamUpload(req);
+    // res.send(result);
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 const editProduct = async (req, res) => {
@@ -129,22 +220,21 @@ const deleteProduct = async (req, res) => {
   }
 };
 
-const PAGE_SIZE = 3;
 const fetchProducts = async (req, res) => {
   try {
-    const { query } = req;
-    const page = query.page || 1;
-    const pageSize = query.pageSize || PAGE_SIZE;
+    // const { query } = req;
+    // const page = query.page || 1;
+    // const pageSize = query.pageSize || PAGE_SIZE;
 
-    const products = await Product.find()
-      .skip(pageSize * (page - 1))
-      .limit(pageSize);
+    const products = await Product.find();
+    // .skip(pageSize * (page - 1))
+    // .limit(pageSize);
     const countProducts = await Product.countDocuments();
     res.send({
       products,
       countProducts,
-      page,
-      pages: Math.ceil(countProducts / pageSize),
+      // page,
+      // pages: Math.ceil(countProducts / pageSize),
     });
   } catch (error) {
     console.error(error);
@@ -207,6 +297,8 @@ const deleteUser = async (req, res) => {
 module.exports = {
   fetchSummary,
   fetchOrders,
+  updateOrderToDelivered,
+  updateOrdertoPaid,
   deleteOrder,
   createProduct,
   editProduct,

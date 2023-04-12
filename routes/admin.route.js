@@ -13,20 +13,35 @@ const {
   fetchUserByID,
   editUser,
   deleteUser,
+  updateOrderToDelivered,
+  updateOrdertoPaid,
 } = require("../controllers/admin.controller.js");
+const singleUpload = require("../middlewares/multer.js");
 
 const router = express.Router();
 
 router.get("/", verifyToken, isAdmin, fetchSummary);
+router
+  .route("/products")
+  .get(verifyToken, isAdmin, fetchProducts)
+  .post(verifyToken, isAdmin, singleUpload, createProduct);
 router.get("/orders", verifyToken, isAdmin, fetchOrders);
-router.delete("/orders/:id", verifyToken, isAdmin, deleteOrder);
-router.post("/products", verifyToken, isAdmin, createProduct);
-router.get("/products/:id", verifyToken, isAdmin, editProduct);
-router.delete("/products/:id", verifyToken, isAdmin, deleteProduct);
-router.get("/products", verifyToken, isAdmin, fetchProducts);
 router.get("/users", verifyToken, isAdmin, fetchUsers);
 router.get("/users/:id", verifyToken, isAdmin, fetchUserByID);
-router.patch("/users/:id", verifyToken, isAdmin, editUser);
+router.patch(
+  "/orders/set-delivered/:id",
+  verifyToken,
+  isAdmin,
+  updateOrderToDelivered
+);
+router.patch("/orders/set-paid/:id", verifyToken, isAdmin, updateOrdertoPaid);
+router
+  .route("/products/:id")
+  .patch(verifyToken, isAdmin, editProduct)
+  .delete(verifyToken, isAdmin, deleteProduct);
 router.delete("/users/:id", verifyToken, isAdmin, deleteUser);
+// router.patch("/users/:id", verifyToken, isAdmin, editUser);
+// router.delete("/orders/:id", verifyToken, isAdmin, deleteOrder);
+// router.delete("/products/:id", verifyToken, isAdmin, deleteProduct);
 
 module.exports = router;

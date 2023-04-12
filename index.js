@@ -5,6 +5,7 @@ const connectDB = require("./config/db");
 const userRouter = require("./routes/user.route.js");
 const productRoute = require("./routes/product.route.js");
 const orderRoute = require("./routes/order.route.js");
+const adminRoute = require("./routes/admin.route.js");
 const { notFound, errorHandler } = require("./middlewares/errorMiddleware.js");
 
 dotenv.config();
@@ -30,6 +31,7 @@ app.use(cookieParser());
 app.use("/api/users", userRouter);
 app.use("/api/products", productRoute);
 app.use("/api/orders", orderRoute);
+app.use("/api/admin", adminRoute);
 
 app.get("/", (req, res) => {
   res.send("Welcome to ChkOut API");
