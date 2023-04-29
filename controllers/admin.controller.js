@@ -120,21 +120,19 @@ const deleteOrder = async (req, res) => {
 };
 
 const createProduct = async (req, res) => {
+  console.log(req);
   try {
     const {
       name,
       slug,
       price,
-      image,
       category,
       brand,
       countInStock,
       description,
       isFeatured,
-      featuredImage,
     } = req.body;
     const file = req.file;
-
     if (
       !name ||
       !slug ||
