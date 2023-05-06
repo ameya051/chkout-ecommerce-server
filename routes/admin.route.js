@@ -16,7 +16,7 @@ const {
   updateOrderToDelivered,
   updateOrdertoPaid,
 } = require("../controllers/admin.controller.js");
-const singleUpload = require("../middlewares/multer.js");
+const upload = require('../middlewares/uploadFile');
 
 const router = express.Router();
 
@@ -24,7 +24,7 @@ router.get("/", verifyToken, isAdmin, fetchSummary);
 router
   .route("/products")
   .get(verifyToken, isAdmin, fetchProducts)
-  .post(verifyToken, isAdmin, singleUpload, createProduct);
+  .post(upload.single("image"), createProduct);
 router.get("/orders", verifyToken, isAdmin, fetchOrders);
 router.get("/users", verifyToken, isAdmin, fetchUsers);
 router.get("/users/:id", verifyToken, isAdmin, fetchUserByID);

@@ -1,9 +1,7 @@
 const Order = require("../models/Order.js");
 const User = require("../models/User.js");
 const Product = require("../models/Product.js");
-const cloudinary = require("cloudinary").v2;
 const dotenv = require("dotenv");
-const getDataUri = require("../utils/dataUri.js");
 dotenv.config();
 
 const fetchSummary = async (req, res) => {
@@ -120,72 +118,31 @@ const deleteOrder = async (req, res) => {
 };
 
 const createProduct = async (req, res) => {
-  console.log(req);
-  try {
-    const {
-      name,
-      slug,
-      price,
-      category,
-      brand,
-      countInStock,
-      description,
-      isFeatured,
-    } = req.body;
-    const file = req.file;
-    if (
-      !name ||
-      !slug ||
-      !category ||
-      !price ||
-      // !image ||
-      !brand ||
-      !countInStock ||
-      !description ||
-      !isFeatured ||
-      !featuredImage
-    ) {
-      return res.status(400).send({ message: "Please add all fields" });
-    }
+  const { name, slug, category, price, brand, countInStock, description } =
+    req.body;
+  const image = req.file.path;
+  const product = new Product({
+    name,
+    slug,
+    image: image,
+    category,
+    price,
+    brand,
+    countInStock,
+    description,
+  });
 
-    cloudinary.config({
-      cloud_name: process.env.CLOUDINARY_CLIENT_NAME,
-      api_key: process.env.CLOUDINARY_CLIENT_API,
-      api_secret: process.env.CLOUDINARY_CLIENT_SECRET,
+  product
+    .save()
+    .then((result) => {
+      res.status(201).json({
+        message: "Product created successfully",
+        data: result,
+      });
+    })
+    .catch((err) => {
+      res.status(500).json({ error: err.message });
     });
-    const fileUri = getDataUri(file);
-    const myCloud = await cloudinary.uploader.upload(fileUri.content);
-
-    await Product.create({
-      name,
-      slug,
-      category,
-      image: myCloud.secure_url,
-      price,
-      brand,
-      countInStock,
-      description,
-      isFeatured,
-      featuredImage,
-    });
-
-    // const streamUpload = (req) => {
-    //   return new Promise((resolve, reject) => {
-    //     const stream = v2.uploader.upload_stream((error, result) => {
-    //       if (result) {
-    //         resolve(result);
-    //       } else {
-    //         reject(error);
-    //       }
-    //     });
-    //     streamifier.createReadStream(req.file.buffer).pipe(stream);
-    //   });
-    // };
-    // const result = await streamUpload(req);
-    // res.send(result);
-  } catch (error) {
-    console.error(error);
-  }
 };
 
 const editProduct = async (req, res) => {
