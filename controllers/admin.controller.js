@@ -168,8 +168,8 @@ const editProduct = async (req, res) => {
 const deleteProduct = async (req, res) => {
   const product = await Product.findById(req.params.id);
   if (product) {
-    await product.remove();
-    res.send({ message: "Product Deleted" });
+    await Product.findOneAndRemove({ _id: req.params.id });
+    res.status(200).send({ message: "Product Deleted" });
   } else {
     res.status(404).send({ message: "Product Not Found" });
   }
