@@ -175,6 +175,7 @@ module.exports = {
   getAllProducts,
   getFeaturedProducts,
   getBySlug,
+  getById,
   getReview,
   postReview,
   searchProduct,

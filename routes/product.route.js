@@ -7,6 +7,7 @@ const {
   postReview,
   searchProduct,
   getCategory,
+  getById,
 } = require("../controllers/product.controller.js");
 const { verifyToken } = require("../middlewares/authMiddleware.js");
 
@@ -17,6 +18,7 @@ router.get("/featured", getFeaturedProducts);
 router.get("/category", getCategory);
 router.get("/search", searchProduct);
 router.get("/:slug", getBySlug);
+router.get("/:id", getById)
 router.get("/reviews/:id", getReview);
 router.post("/reviews/:id", verifyToken, postReview);
 
