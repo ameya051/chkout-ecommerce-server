@@ -175,6 +175,10 @@ const deleteProduct = async (req, res) => {
   }
 };
 
+const fetchProduct = async (req, res) => {
+  const products = await Product.find();
+};
+
 const fetchProducts = async (req, res) => {
   try {
     // const { query } = req;

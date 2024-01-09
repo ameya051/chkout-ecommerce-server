@@ -36,7 +36,7 @@ router.patch(
 );
 router.patch("/orders/set-paid/:id", verifyToken, isAdmin, updateOrdertoPaid);
 router
-  .route("/products/:id")
+  .route("/products/:id").get()
   .patch(verifyToken, isAdmin, editProduct)
   .delete(verifyToken, isAdmin, deleteProduct);
 router.delete("/users/:id", verifyToken, isAdmin, deleteUser);

@@ -34,5 +34,7 @@ app.use(notFound);
 // configure a custome error handler middleware
 app.use(errorHandler);
 
-PORT = process.env.PORT || 5000;
-app.listen(PORT, console.log(`server listening on http://localhost:${PORT}`));
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () =>
+  console.log(`server listening on http://localhost:${PORT}`)
+);
