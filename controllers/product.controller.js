@@ -1,10 +1,18 @@
+const { redis } = require("../config/redis.js");
 const Product = require("../models/Product.js");
 
 const PAGE_SIZE = 3;
 
 const getAllProducts = async (req, res) => {
-  const products = await Product.find();
-  res.status(200).send(products);
+  const cachedVal = await redis.get("products");
+  if (cachedVal) {
+    res.status(200).send(JSON.parse(cachedVal));
+  } else {
+    const products = await Product.find();
+    if (!products) res.status(404).send({ message: "Products not found" });
+    await redis.set("products", JSON.stringify(products));
+    res.status(200).send(products);
+  }
 };
 
 const getFeaturedProducts = async (req, res) => {
