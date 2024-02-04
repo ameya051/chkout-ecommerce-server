@@ -1,0 +1,35 @@
+service: e-commerce
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: ap-south-1
+  environment:
+    PORT: ./
+    MONGO_URI: ${env:MONGO_URI}
+    JWT_SECRET: ${env:JWT_SECRET}
+    MAIL_USERNAME: ${env:MAIL_USERNAME}
+    MAIL_PASSWORD: ${env:MAIL_PASSWORD}
+    OAUTH_CLIENT_ID: ${env:OAUTH_CLIENT_ID}
+    OAUTH_CLIENT_SECRET: ${env:OAUTH_CLIENT_SECRET}
+    OAUTH_REFRESH_TOKEN: ${env:OAUTH_REFRESH_TOKEN}
+    EMAIL: ${env:EMAIL}
+    FRONTEND_BASE_URL: ${env:FRONTEND_BASE_URL}
+    STRIPE_SECRET_KEY: ${env:STRIPE_SECRET_KEY}
+    CLOUDINARY_CLIENT_NAME: ${env:CLOUDINARY_CLIENT_NAME}
+    CLOUDINARY_CLIENT_API: ${env:CLOUDINARY_CLIENT_API}
+    CLOUDINARY_CLIENT_SECRET: ${env:CLOUDINARY_CLIENT_SECRET}
+    REDIS_URL: ${env:REDIS_URL}
+    ENVIRONMENT: ${env:ENVIRONMENT}
+
+plugins:
+  - serverless-offline
+  - serverless-dotenv-plugin
+useDotenv: true
+
+functions:
+  api:
+    handler: index.handler
+    events:
+      - httpApi: '*'

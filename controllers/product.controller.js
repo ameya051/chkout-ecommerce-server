@@ -6,18 +6,18 @@ const PAGE_SIZE = 3;
 const getAllProducts = async (req, res) => {
   const cachedVal = await redis.get("products");
   if (cachedVal) {
-    res.status(200).send(JSON.parse(cachedVal));
+    res.status(200).json(JSON.parse(cachedVal));
   } else {
     const products = await Product.find();
-    if (!products) res.status(404).send({ message: "Products not found" });
+    if (!products) res.status(404).json({ message: "Products not found" });
     await redis.set("products", JSON.stringify(products));
-    res.status(200).send(products);
+    res.status(200).json(products);
   }
 };
 
 const getFeaturedProducts = async (req, res) => {
   const products = await Product.find({ isFeatured: true });
-  res.status(200).send(products);
+  res.status(200).json(products);
 };
 
 const searchProduct = async (req, res) => {
@@ -100,7 +100,7 @@ const searchProduct = async (req, res) => {
     }),
   ]);
 
-  res.send({
+  res.json({
     products,
     countProducts,
     page,
@@ -112,24 +112,24 @@ const searchProduct = async (req, res) => {
 
 const getCategory = async (req, res) => {
   const categories = await Product.find().distinct("category");
-  res.send(categories);
+  res.json(categories);
 };
 
 const getBySlug = async (req, res) => {
   const product = await Product.findOne({ slug: req.params.slug });
   if (product) {
-    res.send(product);
+    res.json(product);
   } else {
-    res.status(404).send({ message: "Product Not Found" });
+    res.status(404).json({ message: "Product Not Found" });
   }
 };
 
 const getById = async (req, res) => {
   const product = await Product.findById(req.params.id);
   if (product) {
-    res.send(product);
+    res.json(product);
   } else {
-    res.status(404).send({ message: "Product Not Found" });
+    res.status(404).json({ message: "Product Not Found" });
   }
 };
 
@@ -137,9 +137,9 @@ const getReview = async (req, res) => {
   const productId = req.params.id;
   const product = await Product.findById(productId);
   if (product) {
-    res.send(product.reviews);
+    res.json(product.reviews);
   } else {
-    res.status(404).send({ message: "Product not found" });
+    res.status(404).json({ message: "Product not found" });
   }
 };
 
@@ -153,7 +153,7 @@ const postReview = async (req, res) => {
     if (product.reviews.find((x) => x.name === req.user.name)) {
       return res
         .status(400)
-        .send({ message: "You already submitted a review" });
+        .json({ message: "You already submitted a review" });
     }
 
     const review = {
@@ -168,14 +168,14 @@ const postReview = async (req, res) => {
       product.reviews.reduce((a, c) => c.rating + a, 0) /
       product.reviews.length;
     const updatedProduct = await product.save();
-    res.status(201).send({
+    res.status(201).json({
       message: "Review Created",
       review: updatedProduct.reviews[updatedProduct.reviews.length - 1],
       numReviews: product.numReviews,
       rating: product.rating,
     });
   } else {
-    res.status(404).send({ message: "Product Not Found" });
+    res.status(404).json({ message: "Product Not Found" });
   }
 };
 

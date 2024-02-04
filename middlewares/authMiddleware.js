@@ -16,11 +16,11 @@ const verifyToken = async (req, res, next) => {
 
       next();
     } catch (error) {
-      res.status(401).send({ error: "Not authorized, token failed" });
+      res.status(401).json({ error: "Not authorized, token failed" });
     }
   }
   if (!token) {
-    res.status(401).send({ error: "Not authorized, no token" });
+    res.status(401).json({ error: "Not authorized, no token" });
   }
 };
 

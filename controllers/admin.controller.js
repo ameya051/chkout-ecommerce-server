@@ -49,7 +49,7 @@ const fetchSummary = async (req, res) => {
         },
       },
     ]);
-    res.send({ users, orders, products, salesData, productCategories });
+    res.json({ users, orders, products, salesData, productCategories });
   } catch (error) {
     console.error(error);
   }
@@ -58,7 +58,7 @@ const fetchSummary = async (req, res) => {
 const fetchOrders = async (req, res) => {
   try {
     const orders = await Order.find().populate("user", "name");
-    res.status(200).send(orders);
+    res.status(200).json(orders);
   } catch (error) {
     console.error(error);
   }
@@ -68,7 +68,7 @@ const updateOrderToDelivered = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
     if (!order) {
-      res.status(404).send({ message: "Order not found" });
+      res.status(404).json({ message: "Order not found" });
     } else if (order?.isPaid) {
       order.isDelivered = true;
       order.deliveredAt = new Date();
@@ -78,7 +78,7 @@ const updateOrderToDelivered = async (req, res) => {
     } else {
       res
         .status(500)
-        .send({ message: "Order wasn't able to be set delivered." });
+        .json({ message: "Order wasn't able to be set delivered." });
     }
   } catch (error) {
     console.error(error);
@@ -89,14 +89,14 @@ const updateOrdertoPaid = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
     if (!order) {
-      res.status(404).send({ message: "Order not found" });
+      res.status(404).json({ message: "Order not found" });
     } else if (order?.paymentMethod === "Cash On Delivery") {
       order.isPaid = true;
       order.paidAt = new Date();
       const updatedOrder = await order.save();
       res.status(201).json(updatedOrder);
     } else {
-      res.status(500).send({ message: "Order wasn't able to be set paid." });
+      res.status(500).json({ message: "Order wasn't able to be set paid." });
     }
   } catch (error) {
     console.error(error);
@@ -108,9 +108,9 @@ const deleteOrder = async (req, res) => {
     const order = await Order.findById(req.params.id);
     if (order) {
       await order.remove();
-      res.status(200).send({ message: "Order Deleted" });
+      res.status(200).json({ message: "Order Deleted" });
     } else {
-      res.status(404).send({ message: "Order Not Found" });
+      res.status(404).json({ message: "Order Not Found" });
     }
   } catch (error) {
     console.error(error);
@@ -159,9 +159,9 @@ const editProduct = async (req, res) => {
     product.countInStock = req.body.countInStock;
     product.description = req.body.description;
     await product.save();
-    res.send({ message: "Product Updated" });
+    res.json({ message: "Product Updated" });
   } else {
-    res.status(404).send({ message: "Product Not Found" });
+    res.status(404).json({ message: "Product Not Found" });
   }
 };
 
@@ -169,9 +169,9 @@ const deleteProduct = async (req, res) => {
   const product = await Product.findById(req.params.id);
   if (product) {
     await Product.findOneAndRemove({ _id: req.params.id });
-    res.status(200).send({ message: "Product Deleted" });
+    res.status(200).json({ message: "Product Deleted" });
   } else {
-    res.status(404).send({ message: "Product Not Found" });
+    res.status(404).json({ message: "Product Not Found" });
   }
 };
 
@@ -189,7 +189,7 @@ const fetchProducts = async (req, res) => {
     // .skip(pageSize * (page - 1))
     // .limit(pageSize);
     const countProducts = await Product.countDocuments();
-    res.send({
+    res.json({
       products,
       countProducts,
       // page,
@@ -202,16 +202,16 @@ const fetchProducts = async (req, res) => {
 
 const fetchUsers = async (req, res) => {
   const users = await User.find({});
-  res.send(users);
+  res.json(users);
 };
 
 const fetchUserByID = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (user) {
-      res.send(user);
+      res.json(user);
     } else {
-      res.status(404).send({ message: "User Not Found" });
+      res.status(404).json({ message: "User Not Found" });
     }
   } catch (error) {
     console.error(error);
@@ -226,9 +226,9 @@ const editUser = async (req, res) => {
       user.email = req.body.email || user.email;
       user.isAdmin = Boolean(req.body.isAdmin);
       const updatedUser = await user.save();
-      res.send({ message: "User Updated", user: updatedUser });
+      res.json({ message: "User Updated", user: updatedUser });
     } else {
-      res.status(404).send({ message: "User Not Found" });
+      res.status(404).json({ message: "User Not Found" });
     }
   } catch (error) {
     console.error(error);
@@ -240,13 +240,13 @@ const deleteUser = async (req, res) => {
     const user = await User.findById(req.params.id);
     if (user) {
       if (user.email === "admin@example.com") {
-        res.status(400).send({ message: "Can Not Delete Admin User" });
+        res.status(400).json({ message: "Can Not Delete Admin User" });
         return;
       }
       await user.remove();
-      res.send({ message: "User Deleted" });
+      res.json({ message: "User Deleted" });
     } else {
-      res.status(404).send({ message: "User Not Found" });
+      res.status(404).json({ message: "User Not Found" });
     }
   } catch (error) {
     console.error(error);

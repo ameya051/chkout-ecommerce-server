@@ -13,9 +13,9 @@ const fetchOrderHistory = async (req, res) => {
     const user = req.user;
     const orders = await Order.find({ user: user._id });
     if (orders) {
-      res.status(200).send(orders);
+      res.status(200).json(orders);
     } else {
-      res.status(404).send({ message: "No orders found." });
+      res.status(404).json({ message: "No orders found." });
     }
   } catch (error) {
     console.error(error);
@@ -36,7 +36,7 @@ const createOrder = async (req, res) => {
     } = req.body;
 
     if (orderItems && !orderItems.length) {
-      res.status(401).send({ message: "No order items" });
+      res.status(401).json({ message: "No order items" });
     } else {
       const order = new Order({
         user: user._id,
@@ -49,7 +49,7 @@ const createOrder = async (req, res) => {
         totalPrice,
       });
       const createdOrder = await order.save();
-      res.status(201).send(createdOrder);
+      res.status(201).json(createdOrder);
     }
   } catch (error) {
     console.error(error);
@@ -61,9 +61,9 @@ const fetchOrderByID = async (req, res) => {
     const ID = new mongoose.Types.ObjectId(req.params.id);
     const order = await Order.findById(ID);
     if (order) {
-      res.status(200).send(order);
+      res.status(200).json(order);
     } else {
-      res.status(404).send({ message: "Order not found." });
+      res.status(404).json({ message: "Order not found." });
     }
   } catch (error) {
     console.error(error);
@@ -86,9 +86,9 @@ const updateOrderOnPay = async (req, res) => {
         };
       }
       const updatedOrder = await order.save();
-      res.status(201).send(updatedOrder);
+      res.status(201).json(updatedOrder);
     } else {
-      res.status(404).send({ message: "Order not found." });
+      res.status(404).json({ message: "Order not found." });
     }
   } catch (error) {
     console.error(error);
@@ -105,7 +105,7 @@ const createStripeIntent = async (req, res) => {
       payment_method_types: ["card"],
     });
 
-    res.send({
+    res.json({
       clientSecret: paymentIntent.client_secret,
     });
   } catch (error) {
@@ -158,7 +158,7 @@ const fetchAdminSummary = async (req, res) => {
         },
       },
     ]);
-    res.send({ users, orders, products, salesData, productCategories });
+    res.json({ users, orders, products, salesData, productCategories });
   } catch (error) {
     console.error(error);
   }
@@ -167,7 +167,7 @@ const fetchAdminSummary = async (req, res) => {
 const fetchAdminOrders = async (req, res) => {
   try {
     const orders = await Order.find().populate("user", "name");
-    res.status(200).send(orders);
+    res.status(200).json(orders);
   } catch (error) {
     console.error(error);
   }
@@ -178,9 +178,9 @@ const deleteAdminOrders = async (req, res) => {
     const order = await Order.findById(req.params.id);
     if (order) {
       await order.remove();
-      res.status(200).send({ message: "Order Deleted" });
+      res.status(200).json({ message: "Order Deleted" });
     } else {
-      res.status(404).send({ message: "Order Not Found" });
+      res.status(404).json({ message: "Order Not Found" });
     }
   } catch (error) {
     console.error(error);

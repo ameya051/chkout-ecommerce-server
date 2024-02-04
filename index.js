@@ -8,6 +8,7 @@ const productRoute = require("./routes/product.route.js");
 const orderRoute = require("./routes/order.route.js");
 const adminRoute = require("./routes/admin.route.js");
 const { notFound, errorHandler } = require("./middlewares/errorMiddleware.js");
+const serverless = require("serverless-http");
 
 dotenv.config();
 connectDB();
@@ -26,7 +27,7 @@ app.use("/api/orders", orderRoute);
 app.use("/api/admin", adminRoute);
 
 app.get("/", (req, res) => {
-  res.send("Welcome to ChkOut API");
+  res.json("Welcome to ChkOut API");
 });
 
 // middleware to act as fallback for all 404 errors
@@ -35,6 +36,10 @@ app.use(notFound);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () =>
-  console.log(`server listening on http://localhost:${PORT}`)
-);
+if (process.env.ENVIRONMENT === "PROD") {
+  module.exports.handler = serverless(app);
+} else {
+  app.listen(PORT, () =>
+    console.log(`server listening on http://localhost:${PORT}`)
+  );
+}

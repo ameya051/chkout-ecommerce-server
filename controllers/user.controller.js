@@ -16,13 +16,13 @@ const login = async (req, res) => {
   if (user) {
     if (bcrypt.compareSync(password, user.password)) {
       const jwtToken = generateToken(user, "access");
-      res.status(200).send({
+      res.status(200).json({
         token: jwtToken,
       });
       return;
     }
   }
-  res.status(401).send({ message: "Invalid email or password" });
+  res.status(401).json({ message: "Invalid email or password" });
 };
 
 // @desc register a new user
@@ -31,12 +31,12 @@ const login = async (req, res) => {
 const register = async (req, res) => {
   const { name, email, password } = req.body;
   if (!name || !email || !password) {
-    res.status(400).send({error: "Please enter all the fields"});
+    res.status(400).json({error: "Please enter all the fields"});
   }
 
   const userExists = await User.findOne({ email: email });
   if (userExists) {
-    res.status(400).send({ message: "User already exists" });
+    res.status(400).json({ message: "User already exists" });
   }
 
   const user = await User.create({
@@ -97,14 +97,14 @@ const resetUserPassword = async (req, res) => {
     if (user && password) {
       user.password = req.body.password;
       await user.save();
-      res.send({
+      res.json({
         message: "Password reseted successfully",
       });
     } else {
-      res.status(401).send("Unable to update password");
+      res.status(401).json("Unable to update password");
     }
   } catch (error) {
-    res.status(400).send("User not found.");
+    res.status(400).json("User not found.");
   }
 };
 
